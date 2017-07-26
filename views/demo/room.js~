@@ -1,0 +1,312 @@
+define(["app", "config", "ws"], function($app, $config, $ws) {
+    // 'ws://127.0.0.1:4321/api/v1/server?uid=88c9439d-39c9-4432-c46c-8c26ca98a7fa&token=9db9e2d3-ea5b-4b10-cb67-8fbc0ded6bf4'
+    var ws =  $ws.connectWithToken();
+
+    var $params = {};
+    var uid = Cookies.get("uid");
+    var token = Cookies.get("token");
+    
+    var labelWidth = 200;
+    var initDone = false;
+
+    var view_room_list = {
+        id: 'view_room_list',
+        rows: [
+            {
+                id: 'dt_room_list',
+                view: 'datatable',
+                //                autowidth: true,
+                //                width: '100%',
+
+                columns: [
+                    {id: 'id', header:"ID", width: 300},
+                    {id: 'name', header:"Name"},
+                    {id: 'mem_cur', header:"No Current"},
+                    {id: 'mem_max', header:"No Max"},
+                    {fillspace: 1},
+                    {id:"join", header:"&nbsp;", width:35, template:"<span  style=' cursor:pointer;' class='webix_icon fa-sign-in'></span>"},
+		            {id:"edit", header:"&nbsp;", width:35, template:"<span  style=' cursor:pointer;' class='webix_icon fa-pencil'></span>"},
+		            // {id:"delete", header:"&nbsp;", width:35, template:"<span  style='cursor:pointer;' class='webix_icon fa-trash-o'></span>"}
+                ],
+                pager: 'pagerA',
+                onClick: {
+                    'fa-sign-in': function(e, id){
+                        console.log("id:" + id);
+                        this.$scope.show('demo.room', {tab:'view_room_auth',id:id});
+                    },
+                    'fa-pencil': function(e, id){
+                        console.log("id:" + id);
+                        this.$scope.show('demo.room', {tab:'view_room_create',id:id});
+                    }
+
+                }
+            },
+            {},
+            {
+                view: 'pager',
+                id: 'pagerA',
+                autosize:true,
+			    height: 35,
+			    group:5,
+                template:"{common.first()}{common.prev()}&nbsp; {common.pages()}&nbsp; {common.next()}{common.last()}",
+            }
+
+        ]
+    }
+
+    var view_room_members = {
+        id: 'view_room_members',
+        cols: [
+            {
+                rows: [
+                    {view: 'label', label: 'Left Side'},
+                    {
+                        view: 'datatable', id: 'room_members_left', autowidth: true,
+                        columns: [
+                            {id: 'uid', header: 'UserID', fillspace: 1},
+                            {id: 'username', header: 'UserName'}
+                        ]
+                    }
+                ]},
+            {},
+            {
+                rows: [
+                    {view: 'label', label: 'Right Side'},
+                    {view: 'datatable', id: 'room_members_right', autowidth: true,
+                     columns: [
+                         {id: 'uid', header: 'UserID', fillspace: 1},
+                         {id: 'username', header: 'UserName'}
+                     ]
+                    }
+                ]}
+        ]
+    }
+
+    var view_room_create = {
+        id: 'view_room_create',
+        rows: [
+            {
+                view: 'form',
+                id: 'form_room_create',
+                elementsConfig: {
+                    labelWidth: labelWidth
+                },
+                elements: [
+                    {view: 'text', name: 'name', label: 'Room Name'},
+                    {view: 'counter', name: 'mem_max', label: 'Max Members'},
+                    {view: 'text', name: 'password', label: 'Password'},
+                ]
+            },
+            {},
+            {
+                cols: [
+                    {view: 'button', label: 'Save', id: 'btn_room_create', css: 'button_primary button_raised', width: 100}, {}
+                ]
+            }
+        ]};
+    var view_room_auth = {
+        id: 'view_room_auth',
+        rows: [
+            {
+                view: 'form',
+                id: 'form_room_auth',
+                elementsConfig: {
+                    labelWidth: labelWidth
+                },
+                elements: [
+                    {view: 'text', name: 'uid', label: 'User ID'},
+                    {view: 'text', name: 'id', label: 'Room ID'},
+                    {view: 'text', name: 'password', label: 'Password'},
+                ]
+            },
+            // {},
+            {cols: [
+                {view: 'button', id: 'btn_room_login', label: 'Login Room'},
+                {},
+                {view: 'button', id: 'btn_room_members', label: 'Room Members'}
+            ]}
+        ]
+    }
+    var main_ui = {
+        rows: [
+            {
+                borderless:true, view:"tabbar", id:'tabbar', value: 'view_room_create', multiview:true,
+                options: [
+                    { value: 'Create Room', id: 'view_room_create'},
+                    { value: 'Room List', id: 'view_room_list'},
+                    { value: 'Room Login', id: 'view_room_auth'},
+                    { value: 'Room Members', id: 'view_room_members'},
+
+                ]
+            },
+            {
+                cells:[
+                    view_room_create,
+                    view_room_list,
+                    view_room_auth,
+                    view_room_members,
+                ]
+            },
+        ]}
+
+    function gotoLogin($scope){
+        $scope.show("/demo.login");
+    }
+    return {
+        $oninit: function($view, $scope) {
+            console.log("oninit");
+            //uid = Cookies.get("uid");
+
+            if(!ws)
+                ws =  $ws.connectWithToken();
+            
+            $ws.onmessage(ws, function(e){
+                $app.callEvent("onmessage", [e]);
+            }, function(){gotoLogin($scope)})
+
+            $$("btn_room_create").attachEvent("onItemClick", function(){
+                var values = $$('form_room_create').getValues();
+                console.log(values);
+                if(values.id) {
+                    $ws.sendText(ws, {cmd:"room_update", ctx: "view_room_create", data:values});
+                } else {
+                    $ws.sendText(ws, {cmd:"room_create", ctx: "view_room_create", data:values});
+                }
+            })
+            $$('tabbar').attachEvent("onAfterTabClick", function(id){
+                console.log(id);
+                
+                switch(id) {
+                case "view_room_list":
+                    // var args = {cmd: "room_read", data: {}};
+                    // $ws.sendText(ws, args);
+                    this.$scope.show('demo.room', {tab: id});
+                    break;
+                // case "view_room_create":
+                //     this.$scope.show('demo.room', {tab: id});
+                    //break;
+                case "view_room_members":
+                    this.$scope.show('demo.room', {tab: id, id: $params.id});
+                    break;
+                default:
+                    this.$scope.show('demo.room', {tab: id});
+                }
+            });
+
+
+            $$('btn_room_members').attachEvent("onItemClick", function(){
+                this.$scope.show("demo.room", {tab: "view_room_members", id: $params.id});
+            })
+            $$('btn_room_login').attachEvent("onItemClick", function(){
+                console.log(this.$scope);
+                var values = $$('form_room_auth').getValues();
+                // values.id = $params.id;
+                // var uid = Cookies.get("uid")
+                // values.uid = uid
+                var args = {
+                    cmd: 'room_auth',
+                    data: values
+                }
+                //console.log($params);
+                $ws.sendText(ws, args);
+            })
+        },
+        $onevent: {
+            onMessage: function(e){
+                var msg = JSON.parse(e.data);
+                
+                //console.log(msg);
+                var status = msg.status;
+                
+                if(!status) {
+                    return webix.message({type: "error", text: "Something wrong."});
+                }
+                //else {
+                  //  webix.message( "Success");
+                //}
+                var cmd = msg.cmd;
+                var data = msg.data;
+                var ctx = msg.ctx;
+                switch(cmd) {
+                case "room_auth":
+                    console.log("room_auth");
+                    webix.message("Authen success.")
+                    var room_token = data.room_token
+                    console.log(room_token);
+                    if(room_token) {
+                        $params.room_token = room_token
+                    }
+                    console.log($params);
+                    break;
+                case "room_create":
+                    console.log("room_read");
+                    console.log(data);
+                    break;
+                case "room_read":
+                    console.log("vao day");
+                    console.log(data);
+                    if(ctx == "view_room_create") {
+                        $$('form_room_create').setValues(data, true);
+                    } else
+                    $$('dt_room_list').parse(data);
+                    break;
+                case "room_members_read":
+                    console.log("vao day");
+                    console.log(data);
+                    $$('room_members_left').clearAll();
+                    $$('room_members_left').parse(data.left);
+                    $$('room_members_right').clearAll();
+                    $$('room_members_right').parse(data.right);
+                    break;
+                    
+                }
+            },
+
+        },
+        $ui: main_ui,
+        $onurlchange: function($config, $url, $scope){
+            uid = Cookies.get("uid");
+            token = Cookies.get("token");
+            var room_id = $config.id;
+
+            
+            $params = _.assign($params, $config);
+            // console.log($url);
+            var tab = $config["tab"];
+            //var roomid = $config["id"];
+            if(tab) {
+                $$(tab).show();
+                switch(tab) {
+                case "view_room_create":
+                    if(room_id) {
+                        var args = {cmd: "room_read", ctx: 'view_room_create', uid: uid, data: {id: room_id}};
+                        $ws.sendText(ws, args);
+                    }
+                    break;
+                case "view_room_list":
+                    var args = {cmd: "room_read", data: {}};
+                    $ws.sendText(ws, args);
+                    break;
+                case "view_room_auth":
+                    var uid = Cookies.get("uid");
+                    var id = $config.id;
+                    $$("form_room_auth").setValues({uid: uid, id: id}, true);
+                    break;
+                case "view_room_members":
+                    console.log($params);
+                    var args = {cmd: "room_members_read", data: {id: $params.id, room_token: $params.room_token}};
+                    $ws.sendText(ws, args);
+                    
+                    //$$("form_room_auth").setValues({uid: uid, id: id}, true);
+                    break;
+                }
+            }
+            console.log("onurlchange");
+            console.log("tab:" + tab + " room_id:" + room_id);
+        },
+        $ondestroy:function(){
+            console.log("ondestroy");
+        }
+        
+    }
+})

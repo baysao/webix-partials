@@ -1,0 +1,210 @@
+define(["app"], function($app) {
+    var labelWidth = 200;
+
+    // var ui_select_api_login_cookie_type =
+    //     {
+    //         id: 'api_login_type_cookie',
+    //         rows: [
+    //             {
+    //                 view: 'text',
+    //                 label:'Cookie Name',
+    //                 name: 'api_login_cookie_name',
+    //                 labelWidth: labelWidth,
+    //             },
+    //             {
+    //                 view: 'text',
+    //                 label:'Time to live',
+    //                 name: 'api_login_cookie_ttl',
+    //                 labelWidth: labelWidth,
+    //             },
+    
+    //         ]
+    //     }
+    // var ui_select_api_login_type = {
+    //     view: 'select',
+    //     name: 'api_login_type',
+    //     id: 'api_login_type',
+    //     label: 'Login Type',
+    //     labelWidth: labelWidth,
+    //     value: 1,
+    //     options: [
+    //         {
+    //             id: 1,
+    //             value: 'Cookie'
+    //         },
+    //         {
+    //             id: 2,
+    //             value: 'Token'
+    //         },
+    //     ],
+    //     on: {
+    //         onAfterRender() {
+    //             var value = this.getValue();
+    //             switch (+value) {
+    //             case 1:
+    //                 $$('res_form_elements').addView(ui_select_api_login_cookie_type, -1);
+    //                 break;
+    //             }
+
+    //         },
+    //         onChange(newv, oldv) {
+    //             var form = $$('res_form_elements');
+    //             switch (+oldv) {
+    //             case 1:
+    //                 form.removeView($$('api_login_type_cookie'));
+    //                 break;
+    //             }
+
+    //             switch (+newv) {
+    //             case 1:
+    //                 form.addView(ui_select_api_login_cookie_type, -1);
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    // }
+    // var ui_select_api_type = {
+    //     view: 'select',
+    //     name: 'api_type',
+    //     id: 'api_type',
+    //     label: 'API Type',
+    //     labelWidth: labelWidth,
+    //     value: 1,
+    //     options: [
+    //         {
+    //             id: 1,
+    //             value: 'Login'
+    //         },
+    //         {
+    //             id: 2,
+    //             value: 'Upload'
+    //         },
+    //         {
+    //             id: 3,
+    //             value: 'Restful'
+    //         }
+    //     ],
+    //     on: {
+    //         onAfterRender() {
+    //             var value = this.getValue();
+    //             switch (+value) {
+    //             case 1:
+    //                 $$('res_form_elements').addView(ui_select_api_login_type, -1);
+    //                 break;
+    //             }
+
+    //         },
+    //         onChange(newv, oldv) {
+    //             var form = $$('res_form_elements');
+    //             switch (+oldv) {
+    //             case 1:
+    //                 form.removeView($$('api_login_type'));
+    //                 break;
+    //             }
+
+    //             switch (+newv) {
+    //             case 1:
+    //                 form.addView(ui_select_api_login_type, -1);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    // var ui_select_res_type = [{
+    //     id: 'res_form_elements',
+    //     rows: [{
+    //         view: 'select',
+    //         name: 'res_type',
+    //         id: 'res_type',
+    //         label: 'Resource Type',
+    //         value: 1,
+    //         options: [
+    //             {
+    //                 id: 1,
+    //                 value: 'APIs'
+    //             },
+    //             {
+    //                 id: 2,
+    //                 value: 'Statics'
+    //             }
+    //         ],
+    //         on: {
+    //             onAfterRender() {
+    //                 var value = this.getValue();
+    //                 switch (+value) {
+    //                 case 1:
+    //                     $$('res_form_elements').addView(ui_select_api_type, -1);
+    //                     break;
+    //                 }
+
+    //             },
+    //             onChange(newv, oldv) {
+    //                 var form = $$('res_form_elements');
+    //                 switch (+oldv) {
+    //                 case 1:
+    //                     form.removeView($$('api_type'));
+    //                     break;
+    //                 }
+
+    //                 switch (+newv) {
+    //                 case 1:
+    //                     form.addView(ui_select_api_type, -1);
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //           ]
+    // }]
+
+    return {
+        $oninit: function($view, $scope) {
+            // $$('res_save').attachEvent("onItemClick", function() {
+            //     $app.callEvent("onSave");
+            // })
+        },
+        $onevent: {
+            // onSave: function() {
+            //     console.log("save");
+            //     var values = $$("res_form").getValues();
+            //     webix.ajax().post("/api/v1/res", values, function(text, xhr) {
+            //         var res = xhr.json();
+            //         console.log(res);
+            //     })
+            // }
+        },
+        $ui: {
+            type: 'material',
+            id: 'demo_register',
+            rows: [{
+                template: "Register",
+                type: 'header'
+            },
+                   // {
+                   //     view: 'form',
+                   //     id: 'res_form',
+                   //     elementsConfig: {
+                   //         labelWidth: labelWidth
+                   //     },
+                   //     elements: ui_select_res_type
+                   // },
+                   // {
+                   //     id: 'res_marker'
+                   // },
+                   // {
+                   //     cols: [{
+                   //         view: 'button',
+                   //         id: 'res_save',
+                   //         value: 'Save',
+                   //         width: 100,
+                   //         css: 'button_primary button_raised'
+                   //     }, {}]
+                   // }
+                  ]
+        }
+    }
+})
